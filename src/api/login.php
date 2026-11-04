@@ -1,17 +1,17 @@
 <?php
 /* ============================================================================
- * POST /api/login.php   — password step of the login flow
+ * POST /api/login.php   - password step of the login flow
  * LAB ENVIRONMENT · synthetic data only
  * ----------------------------------------------------------------------------
- * V3 — a valid (synthetic) leaked credential authenticates here and reaches
+ * V3 - a valid (synthetic) leaked credential authenticates here and reaches
  *      the OTP step.
- * V4 — BROKEN 2FA / pre-OTP token disclosure. The moment the password check
+ * V4 - BROKEN 2FA / pre-OTP token disclosure. The moment the password check
  *      passes, this endpoint mints a FULLY AUTHENTICATED session and returns a
  *      usable sessionToken + user data, BEFORE the OTP is validated. Every
  *      protected page/endpoint then accepts that token without ever checking
- *      the OTP (see includes/auth.php + helpers.php). The correct design — a
+ *      the OTP (see includes/auth.php + helpers.php). The correct design - a
  *      short-lived pre-auth challenge token, real session minted only AFTER
- *      OTP verification — is intentionally omitted.
+ *      OTP verification - is intentionally omitted.
  *
  * Flawed response shape (from the build guide, page 21):
  *   POST /api/login -> 200

@@ -1,9 +1,9 @@
 <?php
-/* Senarath Online Banking — OTP step (LAB ENVIRONMENT).
+/* Senarath Online Banking - OTP step (LAB ENVIRONMENT).
  *
  * This page exists so the login flow LOOKS complete. But because the session
  * is already authenticated (V4), the OTP is never actually required: the user
- * — or an attacker holding the pre-OTP token — can navigate straight to
+ * - or an attacker holding the pre-OTP token - can navigate straight to
  * /dashboard.php and it works. Submitting the OTP here just marks otp_verified,
  * which nothing enforces.
  */
@@ -17,12 +17,22 @@ if (!$cust) { header('Location: /index.php'); exit; }
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Verify — Senarath Online Banking</title>
+<title>Verify - Senarath Online Banking</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/app.css">
 <link rel="icon" href="/assets/img/logo.png">
 </head>
 <body>
+<div id="nprogress"><div class="bar"></div></div>
+<div id="splash">
+  <div class="splash-inner">
+    <div class="splash-logo"><img src="/assets/img/logo.png" alt="Senarath Bank"></div>
+    <div class="splash-bar"><span></span></div>
+    <div class="splash-tag">Secure Online Banking</div>
+  </div>
+</div>
+<script>try{if(sessionStorage.getItem('sb_splash')==='1'){var _s=document.getElementById('splash');if(_s)_s.style.display='none';}}catch(e){}</script>
+
 <div class="auth-wrap">
   <div class="auth-brandside">
     <div class="z">
@@ -66,9 +76,10 @@ document.getElementById('otpForm').addEventListener('submit', async (ev)=>{
   ev.preventDefault();
   const code = ds.map(d=>d.value).join('');
   const res = await fetch('/api/verify-otp.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({otp:code})});
-  // Regardless of the result we can proceed — the session is already valid (V4).
+  // Regardless of the result we can proceed - the session is already valid (V4).
   window.location = '/dashboard.php';
 });
 </script>
+<script src="/assets/js/app.js"></script>
 </body>
 </html>

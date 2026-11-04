@@ -36,7 +36,7 @@ services:
     depends_on:
       - ebanking
     ports:
-      - "8080:80"
+      - "80:80"
       # - "443:443"               # enable after adding certs (see gateway.conf)
     volumes:
       - ./nginx/gateway.conf:/etc/nginx/conf.d/default.conf:ro

@@ -1,6 +1,6 @@
 <?php
 /* ============================================================================
- * POST /api/verify-otp.php — OTP verification (LAB ENVIRONMENT)
+ * POST /api/verify-otp.php - OTP verification (LAB ENVIRONMENT)
  * ----------------------------------------------------------------------------
  * V4 context: this endpoint marks otp_verified = 1 on the session, but NOTHING
  * in the app requires otp_verified to be 1. The session was already fully
@@ -21,7 +21,7 @@ if (!$sess) { http_response_code(401); echo json_encode(['ok'=>false,'error'=>'N
 
 $match = hash_equals($sess['otp_code'], $otp) || hash_equals(LAB_FIXED_OTP, $otp);
 
-// Mark verified if it matches — but note the session is usable either way (V4).
+// Mark verified if it matches - but note the session is usable either way (V4).
 if ($match) {
     q("UPDATE sessions SET otp_verified = 1 WHERE token = :t", [':t' => $t]);
 }

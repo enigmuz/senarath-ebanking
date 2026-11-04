@@ -1,5 +1,5 @@
 <?php
-/* Senarath Online Banking — Accounts. LAB ENVIRONMENT. */
+/* Senarath Online Banking - Accounts. LAB ENVIRONMENT. */
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/layout.php';
 $accounts = all("SELECT * FROM accounts WHERE customer_id = :c ORDER BY id", [':c' => $customer['id']]);

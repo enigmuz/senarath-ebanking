@@ -1,5 +1,5 @@
 <?php
-/* Senarath Online Banking — authenticated app shell. LAB ENVIRONMENT. */
+/* Senarath Online Banking - authenticated app shell. LAB ENVIRONMENT. */
 require_once __DIR__ . '/../helpers.php';
 
 function nav_item(string $href, string $label, string $icon, string $active): string {
@@ -26,7 +26,7 @@ function app_header(array $customer, string $active, string $pageTitle): void {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= e($pageTitle) ?> — Senarath Online Banking</title>
+<title><?= e($pageTitle) ?> - Senarath Online Banking</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -34,6 +34,16 @@ function app_header(array $customer, string $active, string $pageTitle): void {
 <link rel="icon" href="/assets/img/logo.png">
 </head>
 <body>
+<div id="nprogress"><div class="bar"></div></div>
+<div id="splash">
+  <div class="splash-inner">
+    <div class="splash-logo"><img src="/assets/img/logo.png" alt="Senarath Bank"></div>
+    <div class="splash-bar"><span></span></div>
+    <div class="splash-tag">Secure Online Banking</div>
+  </div>
+</div>
+<script>try{if(sessionStorage.getItem('sb_splash')==='1'){var _s=document.getElementById('splash');if(_s)_s.style.display='none';}}catch(e){}</script>
+
 <div class="app">
   <aside class="sidebar" id="sidebar">
     <div class="logo"><img src="/assets/img/logo.png" alt="Senarath Bank"></div>
@@ -88,6 +98,7 @@ document.querySelectorAll('.side-nav a').forEach(function(a){
   });
 });
 </script>
+<script src="/assets/js/app.js"></script>
 </body>
 </html>
     <?php

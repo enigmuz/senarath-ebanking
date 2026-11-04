@@ -1,11 +1,11 @@
 <?php
 /* ============================================================================
- * Senarath Online Banking — "Upload documents" (LAB ENVIRONMENT)
+ * Senarath Online Banking - "Upload documents" (LAB ENVIRONMENT)
  * ----------------------------------------------------------------------------
- * INTENTIONAL WEAKNESS V5 — Unrestricted file upload -> RCE.
+ * INTENTIONAL WEAKNESS V5 - Unrestricted file upload -> RCE.
  *
  * The document-upload handler, exactly as the build guide specifies:
- *   1. Accepts ANY file — no extension allow-list, no MIME check, no content
+ *   1. Accepts ANY file - no extension allow-list, no MIME check, no content
  *      inspection.
  *   2. Stores the file INSIDE the webroot (./uploads), a path Apache serves.
  *   3. Preserves the original name/extension, and the uploads directory is left
@@ -19,7 +19,7 @@
  * weakness with the benign file documented in VULNERABILITIES.md, which prints
  * "LAB-RCE-OK:<service account>".
  *
- * Only basename() is applied — purely to stop path traversal OUTSIDE the
+ * Only basename() is applied - purely to stop path traversal OUTSIDE the
  * uploads dir. That is NOT a security control on the upload itself; the file
  * type is deliberately unrestricted.
  * ==========================================================================*/

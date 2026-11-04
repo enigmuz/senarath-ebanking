@@ -1,5 +1,5 @@
 <?php
-/* Senarath Online Banking — Dashboard. LAB ENVIRONMENT.
+/* Senarath Online Banking - Dashboard. LAB ENVIRONMENT.
  * Reached with a pre-OTP session (V4) just as well as a fully-verified one. */
 require_once __DIR__ . '/includes/auth.php';      // $customer
 require_once __DIR__ . '/includes/layout.php';

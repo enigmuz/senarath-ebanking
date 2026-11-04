@@ -1,5 +1,5 @@
 <?php
-/* Senarath Online Banking — Profile. LAB ENVIRONMENT. */
+/* Senarath Online Banking - Profile. LAB ENVIRONMENT. */
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/layout.php';
 $msg=null;

@@ -1,6 +1,6 @@
 <?php
 /* ============================================================================
- * Protected-page guard — include at the top of every authenticated page.
+ * Protected-page guard - include at the top of every authenticated page.
  * LAB ENVIRONMENT.
  * ----------------------------------------------------------------------------
  * V4 lives here by omission: require_auth() -> current_customer() accepts any

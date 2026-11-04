@@ -1,9 +1,9 @@
 <?php
 /* ============================================================================
- * Senarath Bank — Online Banking (origin application, WEB01 / Part A)
+ * Senarath Bank - Online Banking (origin application, WEB01 / Part A)
  * LAB ENVIRONMENT · fictional institution · synthetic data only
  * ----------------------------------------------------------------------------
- * INTENTIONAL WEAKNESS V6 — Database credentials in a plaintext environment
+ * INTENTIONAL WEAKNESS V6 - Database credentials in a plaintext environment
  * variable. The app reads DB_USER / DB_PASSWORD / DB_HOST directly from the
  * process environment (set in .env / docker-compose). They are plaintext and
  * readable by anything running as the web user. After RCE (V5) an attacker
@@ -11,7 +11,7 @@
  * SQL01 (stage 9). This is the documented build, not a defect to fix.
  * ==========================================================================*/
 
-// --- Database connection (read from plaintext environment — V6) ------------
+// --- Database connection (read from plaintext environment - V6) ------------
 define('DB_HOST', getenv('DB_HOST') ?: 'SQL01.senarath.local');
 define('DB_PORT', getenv('DB_PORT') ?: '1433');
 define('DB_NAME', getenv('DB_NAME') ?: 'SenarathLab');

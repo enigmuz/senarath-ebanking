@@ -1,6 +1,6 @@
 <?php
 /* ============================================================================
- * Senarath Bank — MSSQL connection layer (PDO / FreeTDS dblib)
+ * Senarath Bank - MSSQL connection layer (PDO / FreeTDS dblib)
  * LAB ENVIRONMENT · connects WEB01 origin app -> SQL01 MSSQL over TCP 1433
  * ----------------------------------------------------------------------------
  * The DMZ web origin talks directly to the internal MSSQL host on 1433

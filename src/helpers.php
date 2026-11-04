@@ -1,15 +1,15 @@
 <?php
 /* ============================================================================
- * Senarath Bank — session / auth helpers
+ * Senarath Bank - session / auth helpers
  * LAB ENVIRONMENT · synthetic data only
  * ----------------------------------------------------------------------------
- * INTENTIONAL WEAKNESS V4 — Broken 2FA (pre-OTP token disclosure).
+ * INTENTIONAL WEAKNESS V4 - Broken 2FA (pre-OTP token disclosure).
  * start_session_for() mints a FULLY AUTHENTICATED session the moment the
  * password check passes, BEFORE any OTP is verified. current_customer()
  * accepts that session for every protected page/endpoint and never checks
- * whether the OTP step was completed. The "correct" design — a short-lived
+ * whether the OTP step was completed. The "correct" design - a short-lived
  * pre-auth challenge token, with the real session minted only AFTER OTP
- * verification — is intentionally omitted. See api/login.php and includes/auth.php.
+ * verification - is intentionally omitted. See api/login.php and includes/auth.php.
  * ==========================================================================*/
 require_once __DIR__ . '/db.php';
 

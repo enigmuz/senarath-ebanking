@@ -1,5 +1,5 @@
 <?php
-/* Senarath Online Banking — Statements. LAB ENVIRONMENT.
+/* Senarath Online Banking - Statements. LAB ENVIRONMENT.
  * Download exports a CSV of the selected account's transactions. */
 require_once __DIR__ . '/includes/auth.php';
 $accounts = all("SELECT * FROM accounts WHERE customer_id = :c ORDER BY id", [':c'=>$customer['id']]);

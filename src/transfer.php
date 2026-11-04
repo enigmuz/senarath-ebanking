@@ -1,5 +1,5 @@
 <?php
-/* Senarath Online Banking — Transfer money. LAB ENVIRONMENT.
+/* Senarath Online Banking - Transfer money. LAB ENVIRONMENT.
  * Functional: debits the source account and records a transaction. */
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/layout.php';
@@ -52,14 +52,14 @@ app_header($customer, '/transfer.php', 'Transfer money');
         <label>From account</label>
         <select name="from" required>
           <?php foreach ($accounts as $a): ?>
-            <option value="<?= (int)$a['id'] ?>"><?= e($a['account_type']) ?> · <?= e(mask_acct($a['account_no'])) ?> — <?= money((float)$a['balance']) ?></option>
+            <option value="<?= (int)$a['id'] ?>"><?= e($a['account_type']) ?> · <?= e(mask_acct($a['account_no'])) ?> - <?= money((float)$a['balance']) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
       <div class="field">
         <label>Payee</label>
         <select onchange="fill(this)">
-          <option value="">— New payee —</option>
+          <option value="">- New payee -</option>
           <?php foreach ($benes as $b): ?>
             <option value="<?= e($b['name']) ?>|<?= e($b['account_no']) ?>"><?= e($b['nickname'] ?: $b['name']) ?> · <?= e($b['bank']) ?></option>
           <?php endforeach; ?>
@@ -68,7 +68,7 @@ app_header($customer, '/transfer.php', 'Transfer money');
       <div class="field"><label>Payee name</label><input name="to_name" id="to_name" required placeholder="e.g. Nimal Perera"></div>
       <div class="field"><label>Payee account number</label><input name="to_acct" id="to_acct" required placeholder="10-digit account number"></div>
       <div class="field"><label>Amount (LKR)</label><input name="amount" type="number" step="0.01" min="0.01" required placeholder="0.00"></div>
-      <div class="field"><label>Reference</label><input name="ref" placeholder="e.g. Rent — November" value="Online transfer"></div>
+      <div class="field"><label>Reference</label><input name="ref" placeholder="e.g. Rent - November" value="Online transfer"></div>
       <div class="form-actions">
         <button class="btn btn-gold" type="submit">Send transfer</button>
         <a class="btn btn-ghost" href="/dashboard.php">Cancel</a>
