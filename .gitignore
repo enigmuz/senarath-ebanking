@@ -1,0 +1,16 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+*.log
+
+# Uploaded lab artifacts (keep the folder, not its contents)
+src/uploads/*
+!src/uploads/.gitkeep
+!src/uploads/README.txt
+
+# NOTE: .env is intentionally COMMITTED in this LAB repo (weakness V6).
+# In any real project you would ignore it:
+# .env
