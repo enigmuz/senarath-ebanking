@@ -286,7 +286,7 @@ table.tbl tr:hover td{background:#fbfcfe}
 .lp-frame{position:relative;background:linear-gradient(170deg,#0e2347,#0a1830);border-radius:28px 28px 0 0;
   padding:18px 13px 22px;box-shadow:0 34px 70px rgba(10,30,60,.4);border:5px solid #0a1830;border-bottom:none}
 .lp-notch{width:52px;height:5px;border-radius:999px;background:rgba(255,255,255,.25);margin:0 auto 14px}
-.lp-logo img{height:26px;display:block;margin:0 auto 16px;background:#fff;border-radius:7px;padding:5px 8px}
+.lp-logo img{height:30px;width:auto;display:block;margin:0 auto 16px;background:#fff;border-radius:8px;padding:6px 10px}
 .lp-menu{display:flex;flex-direction:column;gap:9px}
 .lp-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);
   border-radius:10px;padding:10px 11px;color:#e7eefb;font-size:.8rem;font-weight:500}
@@ -313,3 +313,8 @@ table.tbl tr:hover td{background:#fbfcfe}
   .login-main{padding:14px 16px 28px}
   .pill{flex:1 1 100%}
 }
+
+/* logo at top of the login card */
+.login-logo{margin:0 0 16px}
+.login-logo img{height:42px;width:auto}
+@media (max-width:420px){ .login-logo img{height:36px} }

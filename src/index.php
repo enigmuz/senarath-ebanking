@@ -49,6 +49,7 @@ if (current_customer()) { header('Location: /dashboard.php'); exit; }
 
   <div class="login-main">
     <div class="login-card">
+      <div class="login-logo"><img src="/assets/img/logo.png" alt="Senarath Bank"></div>
       <h2>Log in</h2>
       <p class="login-sub">Enter your online banking credentials to continue.</p>
       <div id="err" class="alert alert-err" style="display:none"></div>
