@@ -34,7 +34,6 @@ function app_header(array $customer, string $active, string $pageTitle): void {
 <link rel="icon" href="/assets/img/logo.png">
 </head>
 <body>
-<div class="lab-banner">LAB ENVIRONMENT — <b>Senarath Bank</b> online banking. Fictional institution, synthetic data, intentional weaknesses (V1–V6). CrowdStrike demonstration only.</div>
 <div class="app">
   <aside class="sidebar" id="sidebar">
     <div class="logo"><img src="/assets/img/logo.png" alt="Senarath Bank"></div>
@@ -56,7 +55,7 @@ function app_header(array $customer, string $active, string $pageTitle): void {
   <div class="main">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:14px">
-        <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">
+        <button class="menu-btn" onclick="toggleSB()" aria-label="Toggle menu">
           <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
         </button>
         <div class="pg-title"><?= e($pageTitle) ?></div>
@@ -75,6 +74,20 @@ function app_footer(): void {
     </div>
   </div>
 </div>
+<div class="sb-overlay" id="sbOverlay" onclick="toggleSB()"></div>
+<script>
+function toggleSB(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sbOverlay').classList.toggle('show');
+}
+// close the off-canvas sidebar after choosing a destination
+document.querySelectorAll('.side-nav a').forEach(function(a){
+  a.addEventListener('click',function(){
+    var sb=document.getElementById('sidebar');
+    if(sb.classList.contains('open')) toggleSB();
+  });
+});
+</script>
 </body>
 </html>
     <?php

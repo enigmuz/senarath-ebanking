@@ -161,3 +161,43 @@ table.tbl tr:hover td{background:#fbfcfe}
   .menu-btn{display:grid!important}
 }
 .menu-btn{display:none;width:40px;height:40px;border-radius:10px;place-items:center;background:var(--mist);border:none;cursor:pointer}
+
+/* ============================================================
+   Mobile responsiveness enhancements (look & feel only)
+   ============================================================ */
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(7,19,36,.5);z-index:55}
+.sb-overlay.show{display:block}
+
+@media (max-width:980px){
+  .content{padding:18px 16px}
+  .topbar{padding:0 14px;height:60px}
+  .topbar .pg-title{font-size:1.1rem}
+}
+@media (max-width:720px){
+  .summary{gap:16px}
+  .summary.panel{padding:16px 18px}
+  .summary .s b{font-size:1.25rem}
+  /* wide tables scroll horizontally instead of breaking the layout */
+  .panel .pb.flush{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table.tbl{min-width:620px}
+  table.tbl th,table.tbl td{padding:11px 14px;font-size:.88rem}
+  .acct-card .bal{font-size:1.6rem}
+  .quick{grid-template-columns:repeat(2,1fr)}
+  .auth-formside{padding:28px 20px}
+  .auth-card h2{font-size:1.55rem}
+  .otp-inputs{gap:7px}
+  .otp-inputs input{padding:12px 0;font-size:1.25rem}
+  .lab-banner{font-size:.68rem;padding:6px 12px}
+  .ph{flex-wrap:wrap;gap:10px}
+  .form-actions{flex-wrap:wrap}
+  .form-actions .btn{flex:1;justify-content:center}
+}
+@media (max-width:440px){
+  .content{padding:14px 12px}
+  .quick a{padding:14px 8px;font-size:.8rem}
+  .otp-inputs input{font-size:1.05rem}
+  .acct-card{padding:18px}
+  .panel .ph{padding:14px 16px}
+  .panel .pb{padding:8px 16px 16px}
+  .summary{flex-direction:column;gap:12px}
+}

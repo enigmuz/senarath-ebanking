@@ -17,7 +17,6 @@ if (current_customer()) { header('Location: /dashboard.php'); exit; }
 <link rel="icon" href="/assets/img/logo.png">
 </head>
 <body>
-<div class="lab-banner">LAB ENVIRONMENT — <b>Senarath Bank</b> online banking. Fictional institution, synthetic data. CrowdStrike demonstration only.</div>
 <div class="auth-wrap">
   <div class="auth-brandside">
     <div class="z">

@@ -23,7 +23,6 @@ if (!$cust) { header('Location: /index.php'); exit; }
 <link rel="icon" href="/assets/img/logo.png">
 </head>
 <body>
-<div class="lab-banner">LAB ENVIRONMENT — OTP step is present but <b>not enforced</b> (V4). You can also go straight to the dashboard.</div>
 <div class="auth-wrap">
   <div class="auth-brandside">
     <div class="z">
