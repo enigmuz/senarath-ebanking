@@ -4,7 +4,7 @@
 > Senarath Bank CrowdStrike demonstration, per the *Senarath Bank Lab Build
 > Guide* (Part A, Web tier, stages 1–8). None is a defect to fix. The bank is
 > fictional and all data is synthetic. Keep this environment isolated and
-> time-boxed (see `DEPLOYMENT_GUIDE.md` §12).
+> time-boxed (see `DEPLOY.md` §11).
 
 This document maps each documented weakness to **where it lives in the code**,
 **how to verify it**, and the **acceptance test** from the build guide. It is the
@@ -13,10 +13,10 @@ web-tier counterpart to the Infrastructure/AD team's D1–D6.
 | ID | Weakness | Primary location |
 |----|----------|------------------|
 | V1 | Leaked credential exists for `ebanking.senarathbank.com` | DB seed (`db/02_seed_customers.sql`) + OSINT seeding (external) |
-| V2 | WAF bypass via direct origin IP | Infra/deployment (`nginx/gateway.conf`, origin exposure) |
+| V2 | WAF bypass via direct origin IP | Infra/deployment (Apache vhost `deploy/apache/senarath.conf`, origin exposure) |
 | V3 | Valid leaked credential logs in | `src/api/login.php` + seed |
 | V4 | Broken 2FA — pre-OTP token disclosure | `src/api/login.php`, `src/helpers.php`, `src/includes/auth.php` |
-| V5 | Unrestricted file upload → RCE | `src/upload.php` + Dockerfile (uploads kept executable) |
+| V5 | Unrestricted file upload → RCE | `src/upload.php` + Apache/mod_php (uploads kept executable) |
 | V6 | DB credentials in plaintext environment | `.env`, `src/config.php` |
 
 ---
@@ -44,15 +44,15 @@ leaked credential and authenticates at `ebanking.senarathbank.com`.
 
 **Goal (guide):** reach the app directly on the origin IP, with the WAF out of the path.
 
-**Build (infrastructure + this gateway):**
+**Build (infrastructure + the Apache origin):**
 - `ebanking.senarathbank.com` (public) points at the **WAF/CDN** (the separate
   `WAF01` appliance in the DMZ). The WAF enforces upload filtering.
-- The **origin** (WEB01: this nginx gateway + the ebanking container) also accepts
+- The **origin** (WEB01: Apache serving the ebanking app) also accepts
   **HTTPS/HTTP for `Host: ebanking.senarathbank.com` from any lab source**, not only
-  the WAF egress ranges. `nginx/gateway.conf` routes purely on the `Host` header and
+  the WAF egress ranges. The Apache vhost routes purely on `ServerName`/`Host` and
   does **no** source-IP restriction and **no** upload filtering.
 - Make the origin IP discoverable (a leaked/historical A record, a dev subdomain,
-  or an MX/SPF record) — an infra task, see `DEPLOYMENT_GUIDE.md` §11.
+  or an MX/SPF record) — an infra task, see `DEPLOY.md`.
 
 **Verify / acceptance:** a request to the origin IP with `Host: ebanking.senarathbank.com`
 returns the app; an upload that the WAF blocks **succeeds** when sent to the origin
@@ -140,7 +140,7 @@ RCE. Reached via the origin IP (V2), so the WAF upload filtering is bypassed.
   1. **Accepts any file** — no extension allow-list, no MIME check, no content
      inspection (only `basename()` to stop path traversal *outside* the folder).
   2. **Stores it inside the webroot** at `src/uploads/`, a path Apache serves.
-  3. **Preserves the original name/extension**, and the `Dockerfile` keeps
+  3. **Preserves the original name/extension**, and Apache/mod_php keeps
      `uploads/` **PHP-executable** (no `.htaccess` disabling PHP). Requesting an
      uploaded `.php` therefore runs it.
 
@@ -166,9 +166,9 @@ curl -s https://ebanking.senarathbank.com/uploads/lab_rce_ok.php
 # → LAB-RCE-OK:www-data   (the web container's service account)
 ```
 
-> The container runs the web process as **`www-data`**, so the marker shows
-> `www-data`. On the Infrastructure team's side (D1/D6) the equivalent origin runs
-> the app as `svc_web`; the chain then pivots to MSSQL using the env credentials (V6).
+> Apache runs the web process as **`www-data`**, so the marker shows `www-data`.
+> On the Infrastructure team's side (D1/D6) the equivalent origin runs the app as
+> `svc_web`; the chain then pivots to MSSQL using the env credentials (V6).
 
 ---
 
@@ -178,10 +178,12 @@ curl -s https://ebanking.senarathbank.com/uploads/lab_rce_ok.php
 pivot to the server segment (stage 9).
 
 **Build:**
-- `.env` holds the MSSQL credentials in **plaintext** and docker-compose injects them
-  into the container environment (`DB_USER`, `DB_PASSWORD`, `DB_HOST`, …).
-- `src/config.php` reads them at runtime with `getenv()`. They are plaintext and
-  reachable by anything running as the web user.
+- `.env` holds the MSSQL credentials in **plaintext**. On the native host
+  `src/config.php` loads `.env` (from the app root, above the webroot) into the
+  process environment (`DB_USER`, `DB_PASSWORD`, `DB_HOST`, …).
+- `src/config.php` then reads them at runtime with `getenv()`. They are plaintext
+  and reachable by anything running as the web user — the `.env` file itself is
+  readable from the RCE context, and the values also show in the environment.
 
 **Verify / acceptance:** from the web-shell/RCE context, dumping the environment
 reveals MSSQL credentials that authenticate over 1433.
@@ -197,6 +199,93 @@ reveals MSSQL credentials that authenticate over 1433.
 
 These credentials authenticate to **SQL01** over TCP 1433 — the handoff into the
 Infrastructure/AD team's stage 9 (D1: `xp_cmdshell`).
+
+---
+
+## API & endpoint reference (with weaknesses)
+
+Base URL (lab): `https://ebanking.senarathbank.com` — or the WEB01 origin IP with
+`Host: ebanking.senarathbank.com` (that reaches the app with the WAF out of the
+path — **V2**).
+
+**Authentication model (this is where V4 lives).** The password step
+(`/api/login.php`) mints a session that is **already `authenticated=1`** and hands
+the token back *before* OTP. Every protected endpoint accepts that token and
+**never checks `otp_verified`**. A token is presented any of three ways
+(`helpers.php → session_token()`):
+- cookie `sb_session=<token>` (set automatically by `/api/login.php`, HttpOnly), or
+- header `Authorization: Bearer <token>`, or
+- query string `?token=<token>` (lab convenience — also means the token can leak via URL/logs).
+
+`/api/*` endpoints accept a JSON body or form-encoded fields and return JSON.
+Session tokens are 48 hex chars, valid 8 hours.
+
+| Method | Endpoint | Auth | Purpose | Weakness |
+|--------|----------|------|---------|----------|
+| POST | `/api/login.php` | none | Password step; returns a usable session token | **V3**, **V4** |
+| POST | `/api/verify-otp.php` | session | Marks `otp_verified` — **not enforced anywhere** | **V4** |
+| GET | `/api/logout.php` | session | Deletes the session, clears cookie | — |
+| GET | `/index.php` | none | Login page | — |
+| GET | `/otp.php` | session | OTP page (skippable — "Skip to dashboard") | **V4** |
+| GET | `/dashboard.php` | session | Account overview | **V4** (token accepted pre-OTP) |
+| GET | `/accounts.php` | session | Lists the customer's accounts | **V4** |
+| GET | `/transactions.php?acct=<id>` | session | Transactions; `acct` is ownership-checked | **V4** |
+| GET/POST | `/transfer.php` | session | Debits a source account, records a txn | **V4** |
+| GET/POST | `/beneficiaries.php` | session | `action=add` / `action=del` payees | **V4** |
+| GET | `/statements.php?download=<id>` | session | CSV export; `download` is ownership-checked | **V4** |
+| GET/POST | `/profile.php` | session | View / update contact details | **V4** |
+| POST | `/upload.php` | session | "Upload documents" — stores **any** file in the webroot | **V4** + **V5** |
+| GET | `/uploads/<name>` | none | Serves uploaded files; an uploaded `.php` **executes** | **V5** |
+
+> Protected endpoints are ownership-scoped (a customer only sees their own
+> accounts, txns, statements, payees). The **only** intentional access flaw is
+> **V4** — the pre-OTP token — which every one of them inherits. There is no
+> intentional IDOR; don't document one.
+
+### POST `/api/login.php` — password step (V3 + V4)
+**Request** (JSON or form): `username` (username **or** customer number), `password`.
+```bash
+curl -s -X POST https://ebanking.senarathbank.com/api/login.php \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"customer01","password":"Welcome123!"}'
+```
+**200** — note the token comes back **before** any OTP (V4):
+```json
+{
+  "ok": true,
+  "otpSent": true,
+  "sessionToken": "<48-hex, already authenticated>",
+  "user": { "id": 10293, "name": "Amal Perera", "accountNo": "701000000001" }
+}
+```
+Errors: `400` missing fields · `401` `{"ok":false,"error":"Invalid username or password."}` · `405` non-POST.
+Password check is `SHA-256(password)` compared to the seeded hash (**V3**). The
+error is generic (no user-enumeration), which is the one thing done "right" here.
+
+### POST `/api/verify-otp.php` — OTP (cosmetic, V4)
+**Request:** `otp` (6 digits). Accepts the per-session code **or** the fixed lab
+OTP `114477`. **200** `{"ok":true,"otpMatched":<bool>,"note":"Session is authenticated independent of OTP (lab V4)."}`.
+Whether or not it matches, the session already works — `/otp.php` even links
+straight to `/dashboard.php`.
+
+### The V4 exploit in two calls
+```bash
+# 1) password only → capture the pre-OTP token
+TOKEN=$(curl -s -X POST https://ebanking.senarathbank.com/api/login.php \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"customer01","password":"Welcome123!"}' \
+  | sed -n 's/.*"sessionToken":"\([^"]*\)".*/\1/p')
+
+# 2) reach any protected endpoint with NO OTP submitted
+curl -s https://ebanking.senarathbank.com/dashboard.php -H "Authorization: Bearer $TOKEN" | grep -i available
+```
+
+### POST `/upload.php` + GET `/uploads/<name>` — unrestricted upload → RCE (V5)
+Multipart field `document`; no extension/MIME/content check; stored under the
+webroot at `src/uploads/` with its original name, kept PHP-executable. Requesting
+the uploaded file back executes it. Send it to the **origin** (V2) so the WAF
+filter is out of the path. Full walkthrough + benign `LAB-RCE-OK` verifier: see
+**V5** above. (No web shell ships in the repo — guide p.23.)
 
 ---
 

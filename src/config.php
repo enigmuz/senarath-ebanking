@@ -5,11 +5,31 @@
  * ----------------------------------------------------------------------------
  * INTENTIONAL WEAKNESS V6 - Database credentials in a plaintext environment
  * variable. The app reads DB_USER / DB_PASSWORD / DB_HOST directly from the
- * process environment (set in .env / docker-compose). They are plaintext and
+ * process environment (loaded from the plaintext .env below). They are plaintext and
  * readable by anything running as the web user. After RCE (V5) an attacker
  * dumps the environment and recovers working MSSQL credentials to pivot to
  * SQL01 (stage 9). This is the documented build, not a defect to fix.
  * ==========================================================================*/
+
+// --- Load the plaintext .env (V6) ------------------------------------------
+// Read the committed .env from the APP ROOT (one level ABOVE the webroot, so
+// Apache never serves it over HTTP) and populate the process environment. Only
+// keys not already set in the environment are loaded. This changes nothing
+// about V6 - the credentials are still plaintext and still recovered by reading
+// the environment / this .env file after RCE (V5).
+(function () {
+    foreach ([__DIR__ . '/../.env', __DIR__ . '/.env'] as $envPath) {
+        if (!is_readable($envPath)) continue;
+        foreach (file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+            $line = trim($line);
+            if ($line === '' || $line[0] === '#' || !str_contains($line, '=')) continue;
+            [$k, $v] = explode('=', $line, 2);
+            $k = trim($k); $v = trim($v, " \t\"'");
+            if ($k !== '' && getenv($k) === false) { putenv("$k=$v"); $_ENV[$k] = $v; }
+        }
+        break; // first readable .env wins
+    }
+})();
 
 // --- Database connection (read from plaintext environment - V6) ------------
 define('DB_HOST', getenv('DB_HOST') ?: 'SQL01.senarath.local');

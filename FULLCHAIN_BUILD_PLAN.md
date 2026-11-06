@@ -24,7 +24,7 @@
 | Host | Zone | OS | Role |
 |------|------|----|------|
 | **WAF01** | DMZ 1 | your WAF/CDN appliance or laptop | Public HTTPS entry; upload filtering (web route only) |
-| **WEB01** | DMZ 1 | Ubuntu + Docker | Origin: corporate + ebanking + nginx gateway (**already built** - `MASTER_RUNBOOK.md`) |
+| **WEB01** | DMZ 1 | Ubuntu (native Apache + PHP) | Origin: corporate + ebanking (**deploy** - `DEPLOY.md`) |
 | **DC01** | Internal `senarath.local` | Windows Server 2019/2022 | Domain controller (the lab forest) |
 | **SQL01** | Internal `senarath.local` | Windows Server + SQL Server 2022 | `SenarathLab` DB; domain-joined |
 | **HR01** | Internal `senarath.local` | **Legacy** Windows, **no EDR** | Legacy HR server (guide p.30-31) |
@@ -58,11 +58,12 @@ intentionally simple lab values.
 | `HR01\lab_local` | `LocalLab123!` | HR01 **local** administrator (stage-15 verification) |
 | `svc_web` | `WebSvc123!` | Origin app process identity on WEB01 (reads `DB_USER/DB_PASSWORD/DB_HOST`) |
 
-> **`svc_web` in our Docker build:** the ebanking container runs its web process
-> as `www-data` and reads the DB creds from the environment (V6), which is the
-> same posture the guide assigns to `svc_web`. You don't need to create a
-> separate `svc_web` OS user for the Dockerized origin; the container *is* the
-> origin process identity.
+> **`svc_web` in our native build:** Apache on WEB01 runs its web process as
+> `www-data` and reads the DB creds from the environment / `.env` (V6), which is
+> the same posture the guide assigns to `svc_web`. If you want the identity to
+> read `svc_web` exactly (marker + Part B handoff), set `User`/`Group` in the
+> Apache vhost to a `svc_web` account; otherwise `www-data` is functionally
+> equivalent for the chain.
 
 ---
 
@@ -187,15 +188,10 @@ recoverable.
 
 ## 7. WEB01 - origin (already built)
 
-No change beyond pointing it at SQL01. In `senarath-ebanking/docker-compose.yml`
-set the mapping to this SQL01's address and keep `DB_HOST=SQL01.senarath.local`:
-```yaml
-  ebanking:
-    extra_hosts:
-      - "SQL01.senarath.local:<SQL01_IP>"
-```
-Then `docker compose up -d --build` (corporate, then ebanking). Full steps:
-`MASTER_RUNBOOK.md`. The web weaknesses V1-V6 are already built into the app
+No change beyond pointing it at SQL01. On WEB01 the installer maps the name in
+`/etc/hosts` (`SQL01.senarath.local → <SQL01_IP>`) and the app keeps
+`DB_HOST=SQL01.senarath.local` (from `.env`). Full from-scratch steps:
+`DEPLOY.md`. The web weaknesses V1-V6 are already built into the app
 (`VULNERABILITIES.md`).
 
 ---
@@ -216,7 +212,7 @@ Then `docker compose up -d --build` (corporate, then ebanking). Full steps:
 Run these **readiness** checks (not attacks):
 
 ```
-[WEB01→SQL01]  docker exec senarath-ebanking bash -lc '(echo >/dev/tcp/SQL01.senarath.local/1433)&&echo ok'
+[WEB01→SQL01]  nc -vz SQL01.senarath.local 1433    # or: (echo >/dev/tcp/SQL01.senarath.local/1433)&&echo ok
 [SQL01]        whoami /priv        # service context shows SeImpersonatePrivilege = Enabled
 [SQL01→HR01]   Test-NetConnection HR01 -Port 445   (and 3389 / 5985)
 [HR01→DC01]    Test-NetConnection DC01 -Port 445   (and 88 / 389)
@@ -254,7 +250,7 @@ SQL01  join domain ; SQL runs as svc_mssql ; setspn MSSQLSvc/SQL01...:1433
        whoami /priv => SeImpersonate ; host prevention = log only
 HR01   legacy OS, NO EDR ; join domain ; svc_hr -> local admins ; setspn HR/hrapp.senarath.local
        plant ONE DA-cred mechanism (record it)
-WEB01  extra_hosts SQL01.senarath.local:<IP> ; DB_HOST stays the name ; compose up
+WEB01  /etc/hosts SQL01.senarath.local <IP> ; DB_HOST stays the name ; native install (DEPLOY.md)
 WAF01  public name -> WAF -> WEB01 origin ; origin IP discoverable (V2) ; upload filter at WAF only
 NOTE   attack execution (roast/elevate/extract/forge) = tester tooling, per the guide
 ```

@@ -204,18 +204,15 @@ ALTER SERVER ROLE sysadmin ADD MEMBER lab_app;
 | **SQL01 → HR01** | legacy HR | SMB **445** / RDP **3389** / WinRM **5985** | lateral move (stage 14) |
 
 WEB01 keeps `DB_HOST=SQL01.senarath.local` and maps it to this host's IP in
-`senarath-ebanking/docker-compose.yml`:
-```yaml
-  ebanking:
-    extra_hosts:
-      - "SQL01.senarath.local:<SQL01_IP>"
+`/etc/hosts` (the native installer does this from `SQL01_IP`):
 ```
-(Full WEB01 steps: `MASTER_RUNBOOK.md`. HR01/DC01 build: `FULLCHAIN_BUILD_PLAN.md`.)
+<SQL01_IP>   SQL01.senarath.local
+```
+(Full WEB01 steps: `DEPLOY.md`. HR01/DC01 build: `FULLCHAIN_BUILD_PLAN.md`.)
 
 **Test the app's path from WEB01:**
 ```bash
-docker exec -it senarath-ebanking bash -lc \
- '(echo > /dev/tcp/SQL01.senarath.local/1433) && echo "SQL01:1433 reachable" || echo "blocked"'
+nc -vz SQL01.senarath.local 1433   # or: (echo > /dev/tcp/SQL01.senarath.local/1433) && echo reachable
 ```
 
 ---
@@ -256,6 +253,6 @@ PASS 2 (DC up): Set-DnsClientServerAddress <DC01_IP> ; Add-Computer -DomainName 
                 Config Mgr -> SQL service Log On = SENARATH\svc_mssql / SqlSvc123! -> restart
                 setspn -A MSSQLSvc/SQL01.senarath.local:1433 SENARATH\svc_mssql
                 (optional) enable xp_cmdshell per guide p.27 ; whoami /priv => SeImpersonate ; prevention = log only
-WEB01:          extra_hosts "SQL01.senarath.local:<SQL01_IP>" ; DB_HOST stays the name ; compose up
+WEB01:          /etc/hosts SQL01.senarath.local <SQL01_IP> ; DB_HOST stays the name ; native install (DEPLOY.md)
 NOTE:           attack execution = tester tooling, per the guide
 ```

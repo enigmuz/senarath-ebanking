@@ -1,9 +1,0 @@
-.git
-.gitignore
-*.md
-db/
-nginx/
-.env.example
-.DS_Store
-src/uploads/*
-!src/uploads/.gitkeep
