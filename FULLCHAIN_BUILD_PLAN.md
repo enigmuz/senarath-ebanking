@@ -202,7 +202,7 @@ Then `docker compose up -d --build` (corporate, then ebanking). Full steps:
 
 ## 8. WAF01 - public web route  (V2 posture)
 
-- Point `online.senarathbank.com` / `www.senarathbank.com` at **WAF01**; the WAF
+- Point `ebanking.senarathbank.com` / `www.senarathbank.com` at **WAF01**; the WAF
   forwards to WEB01 as origin. Enforce **upload filtering only at the WAF**, never
   at the origin (guide p.18, p.22).
 - Make the **origin IP discoverable** and have WEB01 accept the request directly

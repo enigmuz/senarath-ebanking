@@ -163,9 +163,9 @@ docker exec -it senarath-ebanking bash -lc \
   '(echo > /dev/tcp/<SQL01_IP>/1433) && echo "1433 reachable" || echo "1433 blocked"'
 
 # Then load the app and log in:
-curl -s -o /dev/null -w "ebanking %{http_code}\n" -H 'Host: online.senarathbank.com' http://127.0.0.1/index.php
+curl -s -o /dev/null -w "ebanking %{http_code}\n" -H 'Host: ebanking.senarathbank.com' http://127.0.0.1/index.php
 ```
-Open `http://online.senarathbank.com` and log in with
+Open `http://ebanking.senarathbank.com` and log in with
 `customer01 / Welcome123!`. If you get the "briefly unavailable" page, the app
 reached the web tier but not the database - see troubleshooting below.
 

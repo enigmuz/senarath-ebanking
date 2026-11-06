@@ -192,7 +192,7 @@ You should see four containers: `sql01`, `senarath-corporate`,
 Local smoke test on the server:
 ```bash
 curl -s -o /dev/null -w "corporate %{http_code}\n" -H 'Host: www.senarathbank.com'    http://127.0.0.1/
-curl -s -o /dev/null -w "ebanking  %{http_code}\n" -H 'Host: online.senarathbank.com' http://127.0.0.1/index.php
+curl -s -o /dev/null -w "ebanking  %{http_code}\n" -H 'Host: ebanking.senarathbank.com' http://127.0.0.1/index.php
 ```
 Both should return `200`. If ebanking returns the "briefly unavailable" page,
 the app can't reach MSSQL - see §9.
@@ -202,42 +202,75 @@ the app can't reach MSSQL - see §9.
 ## 7. Host names
 
 The gateway routes by the `Host` header:
-`www.senarathbank.com`/`senarathbank.com` -> corporate,
-`online.senarathbank.com` -> ebanking.
+`senarathbank.com` / `www.senarathbank.com` -> corporate,
+`ebanking.senarathbank.com` / `www.ebanking.senarathbank.com` -> ebanking.
 
-- **Public demo:** create DNS **A records** for `www` and `online` pointing at
-  the server's public IP (or point them at your WAF, with the server as origin).
+- **Public demo:** at your registrar's DNS panel for `senarathbank.com`, create
+  four **A records**, all pointing at the server's public IP (or at your WAF,
+  with this server as the origin):
+
+  | Type | Name/Host | Value |
+  |------|-----------|-------|
+  | A | `@`  (root) | `<SERVER_PUBLIC_IP>` |
+  | A | `www` | `<SERVER_PUBLIC_IP>` |
+  | A | `ebanking` | `<SERVER_PUBLIC_IP>` |
+  | A | `www.ebanking` | `<SERVER_PUBLIC_IP>` |
+
+  Verify before issuing the certificate: `dig +short senarathbank.com`,
+  `www.senarathbank.com`, `ebanking.senarathbank.com`,
+  `www.ebanking.senarathbank.com` must all return `<SERVER_PUBLIC_IP>`.
 - **Quick test without DNS:** on your laptop add to the hosts file
   (`C:\Windows\System32\drivers\etc\hosts` or `/etc/hosts`):
   ```
-  <SERVER_PUBLIC_IP>  www.senarathbank.com
-  <SERVER_PUBLIC_IP>  online.senarathbank.com
+  <SERVER_PUBLIC_IP>  senarathbank.com www.senarathbank.com
+  <SERVER_PUBLIC_IP>  ebanking.senarathbank.com www.ebanking.senarathbank.com
   ```
-Then open `http://online.senarathbank.com` and log in with
+Then open `http://ebanking.senarathbank.com` and log in with
 `customer01 / Welcome123!`.
 
 ---
 
 ## 8. TLS (recommended for a public demo)
 
+The gateway is **already wired for HTTPS**: `nginx/gateway.conf` has two active
+`443` server blocks (corporate + ebanking) and `docker-compose.yml` already
+publishes `443:443` and mounts `/etc/letsencrypt:/etc/letsencrypt:ro`. You only
+have to **issue one certificate covering all four names** - and issue it
+**before** the gateway starts, because the gateway needs the cert files to exist
+and certbot needs port 80 free.
+
 ```bash
+# 8.1 install certbot
 sudo apt-get install -y certbot
-sudo certbot certonly --standalone -d online.senarathbank.com -d www.senarathbank.com
+
+# 8.2 issue ONE cert for all four names (run with the gateway NOT yet up, so 80 is free)
+sudo certbot certonly --standalone \
+  -d senarathbank.com -d www.senarathbank.com \
+  -d ebanking.senarathbank.com -d www.ebanking.senarathbank.com \
+  -m <YOUR_EMAIL> --agree-tos --no-eff-email
+# -> saved to /etc/letsencrypt/live/senarathbank.com/  (fullchain.pem + privkey.pem)
 ```
-Then in `senarath-ebanking/docker-compose.yml` publish 443 and mount the certs
-into the gateway, and enable the `443` server blocks in
-`senarath-ebanking/nginx/gateway.conf` (they're there, commented, pointing at
-`/etc/nginx/certs/...`). Example gateway edit:
-```yaml
-  gateway:
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/gateway.conf:/etc/nginx/conf.d/default.conf:ro
-      - /etc/letsencrypt:/etc/nginx/certs:ro
+
+That's it - `docker compose up -d --build` (step 6) now serves HTTPS on all four
+names. Port 80 redirects to HTTPS and serves ACME renewal challenges.
+
+> If you brought the stack up in step 6 before issuing the cert, the gateway will
+> be restarting (missing cert). Issue the cert as above, then
+> `docker compose up -d` in `senarath-ebanking` to bring it healthy.
+
+**Auto-renew** (certs last 90 days; briefly bounce the gateway so certbot can use port 80):
+```bash
+sudo tee /etc/letsencrypt/renewal-hooks/pre/stop-gateway.sh  >/dev/null <<'EOF'
+#!/bin/sh
+docker stop senarath-gateway
+EOF
+sudo tee /etc/letsencrypt/renewal-hooks/post/start-gateway.sh >/dev/null <<'EOF'
+#!/bin/sh
+docker start senarath-gateway
+EOF
+sudo chmod +x /etc/letsencrypt/renewal-hooks/pre/stop-gateway.sh /etc/letsencrypt/renewal-hooks/post/start-gateway.sh
+sudo certbot renew --dry-run
 ```
-`docker compose up -d` to apply.
 
 ---
 

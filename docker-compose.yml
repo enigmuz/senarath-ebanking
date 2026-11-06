@@ -37,10 +37,13 @@ services:
       - ebanking
     ports:
       - "80:80"
-      # - "443:443"               # enable after adding certs (see gateway.conf)
+      - "443:443"
     volumes:
       - ./nginx/gateway.conf:/etc/nginx/conf.d/default.conf:ro
-      # - ./nginx/certs:/etc/nginx/certs:ro   # mount TLS certs here for 443
+      # Let's Encrypt certs (issued on the host with certbot) + ACME webroot.
+      # Obtain the certificate BEFORE starting this gateway - see DEPLOY_UBUNTU_PUBLIC.md.
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./nginx/certbot-webroot:/var/www/certbot
     networks:
       senarath-net:
         aliases: [gateway]

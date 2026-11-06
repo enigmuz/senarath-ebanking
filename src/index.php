@@ -68,7 +68,7 @@ if (current_customer()) { header('Location: /dashboard.php'); exit; }
         </div>
         <button class="btn-cta" type="submit" id="loginBtn">Continue</button>
       </form>
-      <p class="login-new">New to Senarath Bank? <a class="login-link" href="https://www.senarathbank.com/personal.php#open">Open an account</a></p>
+      <p class="login-new">New to Senarath Bank? <a class="login-link" href="https://senarathbank.com/personal.php#open">Open an account</a></p>
 
       <div class="lab-accts">
         <div class="lab-accts-h">Lab test accounts (synthetic)</div>
