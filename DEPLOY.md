@@ -4,6 +4,9 @@
 > **synthetic**. The e-banking app is **deliberately vulnerable** (weaknesses
 > **V1-V6**, see [`VULNERABILITIES.md`](VULNERABILITIES.md)) for the CrowdStrike
 > demonstration. Deploy only on an **isolated, time-boxed** lab network.
+>
+> For the registrar steps, the network diagram and the full port map, see the
+> companion [`DEPLOY_NETWORK.md`](DEPLOY_NETWORK.md).
 
 This is the **single, from-scratch** guide. Both sites run **natively** on one
 Ubuntu host (WEB01) under **Apache + PHP 8.2 + FreeTDS** - **no Docker, no
