@@ -36,7 +36,7 @@ standard web ports and are separated by **hostname**:
 
 - **Port 80** → redirects everything to HTTPS (and serves the cert challenge).
 - **Port 443** → serves **both** sites; nginx picks which one by the hostname
-  (name-based virtual hosting + TLS SNI). One certificate covers all three names.
+  (name-based virtual hosting + TLS SNI). One certificate covers all four names.
 
 That's the "pure website publish" model - no per-site ports to manage.
 
@@ -130,7 +130,7 @@ gateway needs the cert files to exist, and certbot needs port 80 free).
 # 8.1 install certbot
 sudo apt-get install -y certbot
 
-# 8.2 get ONE certificate covering all three names (port 80 is free - gateway not up yet)
+# 8.2 get ONE certificate covering all four names (port 80 is free - gateway not up yet)
 sudo certbot certonly --standalone \
   -d senarathbank.com -d www.senarathbank.com \
   -d ebanking.senarathbank.com -d www.ebanking.senarathbank.com \
@@ -161,7 +161,7 @@ docker ps     # senarath-corporate, senarath-ebanking, senarath-gateway
 docker exec -it senarath-ebanking bash -lc \
  '(echo > /dev/tcp/SQL01.senarath.local/1433) && echo "SQL01:1433 ok" || echo blocked'
 
-# HTTPS on all three names (run from anywhere)
+# HTTPS on all four names (run from anywhere)
 curl -I https://senarathbank.com
 curl -I https://www.senarathbank.com
 curl -I https://ebanking.senarathbank.com
@@ -203,8 +203,8 @@ If you can't expose 80/443 (ISP block, no static IP), put the domain on
 1. Move `senarathbank.com` DNS to Cloudflare (change nameservers at your registrar).
 2. Install `cloudflared` on WEB01, create a tunnel, and map hostnames to the local
    gateway:
-   - `senarathbank.com`, `www` → `http://localhost:80` (corporate, via gateway)
-   - `ebanking.senarathbank.com` → `http://localhost:80` (gateway routes by Host)
+   - `senarathbank.com`, `www.senarathbank.com` → `http://localhost:80` (corporate, via gateway)
+   - `ebanking.senarathbank.com`, `www.ebanking.senarathbank.com` → `http://localhost:80` (gateway routes by Host)
 3. Cloudflare provides the public TLS; set SSL mode **Full**. In this mode you can
    run the gateway on **HTTP only** (drop the 443 block / cert) since Cloudflare
    terminates TLS at the edge. Tell me if you go this route and I'll give the
@@ -221,14 +221,14 @@ If you can't expose 80/443 (ISP block, no static IP), put the domain on
 | Site loads on IP but not the domain | DNS A records wrong or not propagated; `dig +short <name>` must return `PUBLIC_IP`. |
 | "briefly unavailable" page | App can't reach SQL01 → fix `extra_hosts` IP (§6); SQL01 firewall allows 1433 from WEB01. |
 | Port 80/443 "address already in use" | Something else on the host uses them (`sudo ss -tlnp | grep ':80\|:443'`) - stop it. |
-| Browser cert warning | You reached it before issuance, or via a name not on the cert - cert covers exactly the 3 names in §8.2. |
+| Browser cert warning | You reached it before issuance, or via a name not on the cert - cert covers exactly the 4 names in §8.2. |
 
 ### One-screen summary
 ```
 OS     Ubuntu Server 24.04 LTS (native Docker)
-DNS    A @,www,ebanking -> PUBLIC_IP ; router forward 80,443 -> WEB01
+DNS    A @,www,ebanking,www.ebanking -> PUBLIC_IP ; router forward 80,443 -> WEB01
 DOCKER install docker-ce ; git clone both repos ; sed extra_hosts SQL01 IP ; ufw 22,80,443
-CERT   certbot certonly --standalone -d senarathbank.com -d www... -d ebanking...   (gateway DOWN)
+CERT   certbot certonly --standalone -d senarathbank.com -d www. -d ebanking. -d www.ebanking.   (gateway DOWN)
 UP     docker network create senarath-net ; (corporate) up ; (ebanking) up   -> gateway serves 80/443
 TEST   https://senarathbank.com  +  https://ebanking.senarathbank.com -> customer01/Welcome123!
 ```
