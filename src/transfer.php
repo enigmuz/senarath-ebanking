@@ -73,7 +73,7 @@ app_header($customer, '/transfer.php', 'Transfer money');
         <button class="btn btn-gold" type="submit">Send transfer</button>
         <a class="btn btn-ghost" href="/dashboard.php">Cancel</a>
       </div>
-      <p class="note" style="margin-top:14px">Transfers via LankaPay are usually instant. Daily limit LKR 5,000,000 (lab).</p>
+      <p class="note" style="margin-top:14px">Transfers are usually instant. Daily limit LKR 5,000,000 (lab).</p>
     </form>
   </div>
 </div>

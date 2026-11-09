@@ -33,7 +33,7 @@ app_header($customer, '/accounts.php', 'Accounts');
     <?php $first = $accounts[0] ?? null; if ($first): ?>
     <div class="summary">
       <div class="s"><b><?= e($first['account_no']) ?></b><span>Primary account number</span></div>
-      <div class="s"><b><?= e(BANK_SWIFT) ?></b><span>SWIFT / BIC</span></div>
+      <div class="s"><b><?= e(BANK_SWIFT) ?></b><span>BIC</span></div>
       <div class="s"><b>7010<?= e(str_pad((string)$first['id'],4,'0',STR_PAD_LEFT)) ?></b><span>Branch code (Colombo)</span></div>
     </div>
     <?php endif; ?>

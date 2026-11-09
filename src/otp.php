@@ -33,6 +33,14 @@ if (!$cust) { header('Location: /index.php'); exit; }
 </div>
 <script>try{if(sessionStorage.getItem('sb_splash')==='1'){var _s=document.getElementById('splash');if(_s)_s.style.display='none';}}catch(e){}</script>
 
+<!-- Training disclaimer marquee -->
+<div class="disclaimer-marquee" role="note" aria-label="Training disclaimer">
+  <div class="dm-track">
+    <span class="dm-item">This website has been created solely for training purposes and is intended for Awareness use only. &ldquo;Senarath Bank&rdquo; is a fictional bank; any resemblance to a real bank, institution, or organization of the same or similar name is entirely coincidental. The contents of this website are for educational use only, and no responsibility will be accepted for any similarity to any real person, organization, or entity.</span>
+    <span class="dm-item" aria-hidden="true">This website has been created solely for training purposes and is intended for Awareness use only. &ldquo;Senarath Bank&rdquo; is a fictional bank; any resemblance to a real bank, institution, or organization of the same or similar name is entirely coincidental. The contents of this website are for educational use only, and no responsibility will be accepted for any similarity to any real person, organization, or entity.</span>
+  </div>
+</div>
+
 <div class="auth-wrap">
   <div class="auth-brandside">
     <div class="z">

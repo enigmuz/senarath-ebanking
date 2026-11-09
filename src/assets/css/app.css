@@ -318,3 +318,11 @@ table.tbl tr:hover td{background:#fbfcfe}
 .login-logo{margin:0 0 16px}
 .login-logo img{height:42px;width:auto}
 @media (max-width:420px){ .login-logo img{height:36px} }
+/* ---- Training disclaimer marquee (continuous horizontal scroll) ---- */
+.disclaimer-marquee{position:relative;z-index:60;background:linear-gradient(90deg,#0a2a63,#0b3a8c 50%,#0a2a63);color:#eaf1ff;overflow:hidden;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.14)}
+.disclaimer-marquee .dm-track{display:inline-flex;align-items:center;will-change:transform;animation:dm-scroll 60s linear infinite}
+.disclaimer-marquee .dm-item{flex:0 0 auto;padding:7px 48px;font-size:12px;line-height:1.5;font-weight:500;letter-spacing:.1px}
+.disclaimer-marquee:hover .dm-track{animation-play-state:paused}
+@keyframes dm-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (max-width:640px){.disclaimer-marquee .dm-item{font-size:11px;padding:6px 32px}.disclaimer-marquee .dm-track{animation-duration:45s}}
+@media (prefers-reduced-motion:reduce){.disclaimer-marquee .dm-track{animation-duration:150s}}
