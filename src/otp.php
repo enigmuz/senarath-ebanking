@@ -71,9 +71,6 @@ if (!$cust) { header('Location: /index.php'); exit; }
         </div>
         <button class="btn btn-gold" type="submit">Verify &amp; continue</button>
       </form>
-      <p class="note" style="margin-top:18px;text-align:center">
-        <a class="link" href="/dashboard.php">Skip to dashboard →</a>
-      </p>
     </div>
   </div>
 </div>

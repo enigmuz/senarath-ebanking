@@ -31,12 +31,18 @@
     }
 })();
 
-// --- Database connection (read from plaintext environment - V6) ------------
-define('DB_HOST', getenv('DB_HOST') ?: 'SQL01.senarath.local');
-define('DB_PORT', getenv('DB_PORT') ?: '1433');
-define('DB_NAME', getenv('DB_NAME') ?: 'SenarathLab');
-define('DB_USER', getenv('DB_USER') ?: 'lab_app');
-define('DB_PASSWORD', getenv('DB_PASSWORD') ?: 'DbLab123!');
+// --- Database connection (read ONLY from the plaintext .env - V6) -----------
+// No credentials are hardcoded in this file. The loader above populates the
+// process environment from the committed .env, and the app reads them with
+// getenv(). .env is the single source of truth, exactly as the build guide's
+// V6 specifies; after RCE (V5) they are recovered by dumping the environment
+// or reading .env. (If .env is missing these come back empty and the DB
+// connection fails gracefully - it is never silently hardcoded here.)
+define('DB_HOST', getenv('DB_HOST') ?: '');
+define('DB_PORT', getenv('DB_PORT') ?: '');
+define('DB_NAME', getenv('DB_NAME') ?: '');
+define('DB_USER', getenv('DB_USER') ?: '');
+define('DB_PASSWORD', getenv('DB_PASSWORD') ?: '');
 
 // --- Application settings ---------------------------------------------------
 define('APP_NAME', 'Senarath Online Banking');
@@ -46,12 +52,6 @@ define('UPLOAD_URL', '/uploads');
 define('SESSION_COOKIE', 'sb_session');
 define('LAB_FIXED_OTP', getenv('LAB_FIXED_OTP') ?: '114477'); // demo OTP value
 
-// Lab OSINT reference (where the "leaked" creds are seeded for V1/V3).
-// These are synthetic lab logins, NOT domain accounts.
-$LAB_LEAKED = [
-  ['username' => 'customer01', 'customer_no' => '10293', 'password' => 'Welcome123!'],
-  ['username' => 'customer02', 'customer_no' => '10294', 'password' => 'Summer123!'],
-];
 
 date_default_timezone_set('Asia/Colombo');
 
